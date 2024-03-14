@@ -61,6 +61,7 @@ import org.checkerframework.checker.nullness.qual.MonotonicNonNull;
 /**
  * Handles authenticating the player to Mojang's servers.
  */
+// TODO: DEZE
 public class InitialLoginSessionHandler implements MinecraftSessionHandler {
 
   private static final Logger logger = LogManager.getLogger(InitialLoginSessionHandler.class);

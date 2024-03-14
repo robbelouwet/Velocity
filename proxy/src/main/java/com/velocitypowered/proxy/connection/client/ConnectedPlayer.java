@@ -47,6 +47,7 @@ import com.velocitypowered.api.proxy.messages.ChannelIdentifier;
 import com.velocitypowered.api.proxy.player.PlayerSettings;
 import com.velocitypowered.api.proxy.player.ResourcePackInfo;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
+import com.velocitypowered.api.proxy.server.ServerInfo;
 import com.velocitypowered.api.util.GameProfile;
 import com.velocitypowered.api.util.ModInfo;
 import com.velocitypowered.proxy.VelocityServer;
@@ -553,7 +554,7 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
   }
 
   private ConnectionRequestBuilder createConnectionRequest(RegisteredServer server,
-      @Nullable VelocityServerConnection previousConnection) {
+                                                           @Nullable VelocityServerConnection previousConnection) {
     return new ConnectionRequestBuilderImpl(server, previousConnection);
   }
 
@@ -607,7 +608,7 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
       logger.info(Component.text(this + " has disconnected: ").append(translated));
     }
     connection.closeWith(DisconnectPacket.create(translated,
-            this.getProtocolVersion(), connection.getState()));
+        this.getProtocolVersion(), connection.getState()));
   }
 
   public @Nullable VelocityServerConnection getConnectedServer() {
@@ -813,7 +814,10 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
    * @return the next server to try
    */
   public Optional<RegisteredServer> getNextServerToTry() {
-    return this.getNextServerToTry(null);
+    if (!server.getConfiguration().getForwardHost()) {
+      return this.getNextServerToTry(null);
+    }
+    return getPrivateForwardedServer();
   }
 
   /**
@@ -823,6 +827,7 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
    * @param current the "current" server that the player is on, useful as an override
    * @return the next server to try
    */
+  // TODO: DEZE
   private Optional<RegisteredServer> getNextServerToTry(@Nullable RegisteredServer current) {
     if (serversToTry == null) {
       String virtualHostStr = getVirtualHost().map(InetSocketAddress::getHostString)
@@ -853,6 +858,16 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
       return server.getServer(toTryName);
     }
     return Optional.empty();
+  }
+
+  private Optional<RegisteredServer> getPrivateForwardedServer() {
+    String[] splitHostname = getVirtualHost().get().getHostName().split("\\.", 2);
+    String hostname = splitHostname[0] + ".private." + splitHostname[1];
+
+    logger.debug("forward-private-host enabled, forwarding to: " + hostname + ":25565");
+
+    return Optional.of(new VelocityRegisteredServer(
+        server, new ServerInfo("forward-private-backend", new InetSocketAddress(hostname, 25565))));
   }
 
   private static boolean hasSameName(RegisteredServer server, String name) {
@@ -948,7 +963,7 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
     Preconditions.checkNotNull(identifier, "identifier");
     Preconditions.checkNotNull(data, "data");
     PluginMessagePacket message = new PluginMessagePacket(identifier.getId(),
-            Unpooled.wrappedBuffer(data));
+        Unpooled.wrappedBuffer(data));
     connection.write(message);
     return true;
   }

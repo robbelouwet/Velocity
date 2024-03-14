@@ -57,7 +57,8 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 public class VelocityConfiguration implements ProxyConfig {
 
   private static final Logger logger = LogManager.getLogger(VelocityConfiguration.class);
-
+  @Expose
+  private boolean forwardHost = false;
   @Expose
   private String bind = "0.0.0.0:25577";
   @Expose
@@ -100,7 +101,7 @@ public class VelocityConfiguration implements ProxyConfig {
     this.metrics = metrics;
   }
 
-  private VelocityConfiguration(String bind, String motd, int showMaxPlayers, boolean onlineMode,
+  private VelocityConfiguration(String bind, String motd, int showMaxPlayers, boolean onlineMode, boolean forwardHost,
       boolean preventClientProxyConnections, boolean announceForge,
       PlayerInfoForwarding playerInfoForwardingMode, byte[] forwardingSecret,
       boolean onlineModeKickExistingPlayers, PingPassthroughMode pingPassthrough,
@@ -114,6 +115,7 @@ public class VelocityConfiguration implements ProxyConfig {
     this.announceForge = announceForge;
     this.playerInfoForwardingMode = playerInfoForwardingMode;
     this.forwardingSecret = forwardingSecret;
+    this.forwardHost = forwardHost;
     this.onlineModeKickExistingPlayers = onlineModeKickExistingPlayers;
     this.pingPassthrough = pingPassthrough;
     this.enablePlayerAddressLogging = enablePlayerAddressLogging;
@@ -496,6 +498,8 @@ public class VelocityConfiguration implements ProxyConfig {
               "player-info-forwarding-mode", PlayerInfoForwarding.NONE);
       final PingPassthroughMode pingPassthroughMode = config.getEnumOrElse("ping-passthrough",
               PingPassthroughMode.DISABLED);
+      // TODO: DEZE
+      final boolean forwardHost = config.getOrElse("forward-private-host", false);
 
       final String bind = config.getOrElse("bind", "0.0.0.0:25577");
       final int maxPlayers = config.getIntOrElse("show-max-players", 500);
@@ -521,6 +525,7 @@ public class VelocityConfiguration implements ProxyConfig {
               motd,
               maxPlayers,
               onlineMode,
+              forwardHost,
               preventClientProxyConnections,
               announceForge,
               forwardingMode,
@@ -558,6 +563,11 @@ public class VelocityConfiguration implements ProxyConfig {
     return onlineModeKickExistingPlayers;
   }
 
+  public boolean getForwardHost() {
+    return forwardHost;
+  }
+
+  // TODO: DEZE
   private static class Servers {
 
     private Map<String, String> servers = ImmutableMap.of(

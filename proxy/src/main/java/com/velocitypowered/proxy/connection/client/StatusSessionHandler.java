@@ -35,6 +35,7 @@ import org.apache.logging.log4j.Logger;
 /**
  * Handles server list ping packets from a client.
  */
+// TODO: intercept ping requests here
 public class StatusSessionHandler implements MinecraftSessionHandler {
 
   private static final Logger logger = LogManager.getLogger(StatusSessionHandler.class);
@@ -90,9 +91,8 @@ public class StatusSessionHandler implements MinecraftSessionHandler {
       throw EXPECTED_AWAITING_REQUEST;
     }
     this.pingReceived = true;
-
-    this.server.getServerListPingHandler().getInitialPing(inbound)
-        .thenCompose(ping -> server.getEventManager().fire(new ProxyPingEvent(inbound, ping)))
+    this.server.getServerListPingHandler().getInitialPing(inbound).thenCompose(ping -> server.getEventManager().fire(
+            new ProxyPingEvent(inbound, ping)))
         .thenAcceptAsync(
             (event) -> {
               final StringBuilder json = new StringBuilder();

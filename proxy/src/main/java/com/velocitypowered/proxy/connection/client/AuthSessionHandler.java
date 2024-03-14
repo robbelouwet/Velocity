@@ -69,7 +69,7 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
   private State loginState = State.START; // 1.20.2+
 
   AuthSessionHandler(VelocityServer server, LoginInboundConnection inbound,
-      GameProfile profile, boolean onlineMode) {
+                     GameProfile profile, boolean onlineMode) {
     this.server = Preconditions.checkNotNull(server, "server");
     this.inbound = Preconditions.checkNotNull(inbound, "inbound");
     this.profile = Preconditions.checkNotNull(profile, "profile");
@@ -93,6 +93,7 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
       }
 
       // Initiate a regular connection and move over to it.
+      // TODO: DEZE
       ConnectedPlayer player = new ConnectedPlayer(server, profileEvent.getGameProfile(),
           mcConnection, inbound.getVirtualHost().orElse(null), onlineMode,
           inbound.getIdentifiedKey());
@@ -161,8 +162,8 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
       } else {
         if (!Objects.equals(playerKey.getSignatureHolder(), playerUniqueId)) {
           logger.warn("UUID for Player {} mismatches! "
-              + "Chat/Commands signatures will not work correctly for this player!",
-                  player.getUsername());
+                  + "Chat/Commands signatures will not work correctly for this player!",
+              player.getUsername());
         }
       }
     }
@@ -238,6 +239,7 @@ public class AuthSessionHandler implements MinecraftSessionHandler {
     PlayerChooseInitialServerEvent event =
         new PlayerChooseInitialServerEvent(player, initialFromConfig.orElse(null));
 
+    // TODO: DEZE
     return server.getEventManager().fire(event).thenRunAsync(() -> {
       Optional<RegisteredServer> toTry = event.getInitialServer();
       if (toTry.isEmpty()) {

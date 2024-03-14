@@ -98,6 +98,7 @@ public final class InitialInboundConnection implements VelocityInboundConnection
    *
    * @param reason the reason for disconnecting
    */
+  // TODO: intercept to show loading screen?
   public void disconnect(Component reason) {
     Component translated = GlobalTranslator.render(reason, ClosestLocaleMatcher.INSTANCE
         .lookupClosest(Locale.getDefault()));
