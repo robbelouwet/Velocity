@@ -33,5 +33,5 @@ jobs:
       # Publish velocity-dedicated
     - name: Build and Push velocity-dedicated
       run: |
-        docker build -t robbelouwet/velocity-dedicated .
+        docker build . -t robbelouwet/velocity-dedicated
         docker push robbelouwet/velocity-dedicated
