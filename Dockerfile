@@ -7,7 +7,6 @@ WORKDIR /
 
 COPY ./docker/entrypoint.sh /entrypoint.sh
 COPY ./proxy/build/libs/*-all.jar /velocity.jar
-
 COPY ./docker/template-files/* /
 
 RUN apt-get update && apt-get install -y wget git openjdk-17-jre perl
