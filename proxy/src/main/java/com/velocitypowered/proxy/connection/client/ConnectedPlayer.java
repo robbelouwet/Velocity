@@ -861,13 +861,10 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
   }
 
   private Optional<RegisteredServer> getPrivateForwardedServer() {
-    String[] splitHostname = getVirtualHost().get().getHostName().split("\\.", 2);
-    String hostname = splitHostname[0] + ".private." + splitHostname[1];
-
-    logger.debug("forward-private-host enabled, forwarding to: " + hostname + ":25565");
+    String hostname = getVirtualHost().get().getHostName();
 
     return Optional.of(new VelocityRegisteredServer(
-        server, new ServerInfo("forward-private-backend", new InetSocketAddress(hostname, 25565))));
+        server, new ServerInfo(hostname, new InetSocketAddress(hostname, 25565))));
   }
 
   private static boolean hasSameName(RegisteredServer server, String name) {
