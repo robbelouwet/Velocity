@@ -33,5 +33,6 @@ jobs:
       # Publish velocity-dedicated
     - name: Build and Push velocity-dedicated
       run: |
+        find . -maxdepth 2 -type d -exec ls -ld "{}" \;
         docker build . -t robbelouwet/velocity-dedicated
         docker push robbelouwet/velocity-dedicated
