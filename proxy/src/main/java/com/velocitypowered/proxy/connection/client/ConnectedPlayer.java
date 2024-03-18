@@ -863,6 +863,8 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
   private Optional<RegisteredServer> getPrivateForwardedServer() {
     String hostname = getVirtualHost().get().getHostName();
 
+    hostname = hostname.split("\\.", 2)[0];
+
     return Optional.of(new VelocityRegisteredServer(
         server, new ServerInfo(hostname, new InetSocketAddress(hostname, 25565))));
   }
