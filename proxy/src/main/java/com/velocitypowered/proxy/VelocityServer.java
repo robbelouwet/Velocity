@@ -28,6 +28,7 @@ import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
 import com.velocitypowered.api.network.ProtocolVersion;
 import com.velocitypowered.api.plugin.PluginContainer;
 import com.velocitypowered.api.plugin.PluginManager;
+import com.velocitypowered.api.proxy.InboundConnection;
 import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import com.velocitypowered.api.proxy.player.ResourcePackInfo;
@@ -57,6 +58,7 @@ import com.velocitypowered.proxy.protocol.util.FaviconSerializer;
 import com.velocitypowered.proxy.protocol.util.GameProfileSerializer;
 import com.velocitypowered.proxy.scheduler.VelocityScheduler;
 import com.velocitypowered.proxy.server.ServerMap;
+import com.velocitypowered.proxy.server.VelocityRegisteredServer;
 import com.velocitypowered.proxy.util.AddressUtil;
 import com.velocitypowered.proxy.util.ClosestLocaleMatcher;
 import com.velocitypowered.proxy.util.ResourceUtils;
@@ -68,6 +70,7 @@ import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.EventLoopGroup;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -94,6 +97,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.IntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
 import net.kyori.adventure.audience.Audience;
 import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.key.Key;
@@ -121,7 +125,7 @@ public class VelocityServer implements ProxyServer, ForwardingAudience {
       .registerTypeHierarchyAdapter(
           Component.class,
           ProtocolUtils.getJsonChatSerializer(ProtocolVersion.MINECRAFT_1_15_2)
-                  .serializer().getAdapter(Component.class)
+              .serializer().getAdapter(Component.class)
       )
       .registerTypeHierarchyAdapter(Favicon.class, FaviconSerializer.INSTANCE)
       .create();
@@ -129,7 +133,7 @@ public class VelocityServer implements ProxyServer, ForwardingAudience {
       .registerTypeHierarchyAdapter(
           Component.class,
           ProtocolUtils.getJsonChatSerializer(ProtocolVersion.MINECRAFT_1_20_2)
-                  .serializer().getAdapter(Component.class)
+              .serializer().getAdapter(Component.class)
       )
       .registerTypeHierarchyAdapter(Favicon.class, FaviconSerializer.INSTANCE)
       .create();
@@ -137,7 +141,7 @@ public class VelocityServer implements ProxyServer, ForwardingAudience {
       .registerTypeHierarchyAdapter(
           Component.class,
           ProtocolUtils.getJsonChatSerializer(ProtocolVersion.MINECRAFT_1_20_3)
-                  .serializer().getAdapter(Component.class)
+              .serializer().getAdapter(Component.class)
       )
       .registerTypeHierarchyAdapter(Favicon.class, FaviconSerializer.INSTANCE)
       .create();
@@ -302,13 +306,13 @@ public class VelocityServer implements ProxyServer, ForwardingAudience {
           try (final Stream<Path> files = Files.walk(langPath)) {
             files.filter(Files::isRegularFile).forEach(file -> {
               final String filename = com.google.common.io.Files
-                      .getNameWithoutExtension(file.getFileName().toString());
+                  .getNameWithoutExtension(file.getFileName().toString());
               final String localeName = filename.replace("messages_", "")
-                      .replace("messages", "")
-                      .replace('_', '-');
+                  .replace("messages", "")
+                  .replace('_', '-');
               final Locale locale = localeName.isBlank()
-                      ? Locale.US
-                      : Locale.forLanguageTag(localeName);
+                  ? Locale.US
+                  : Locale.forLanguageTag(localeName);
 
               translationRegistry.registerAll(locale, file, false);
               ClosestLocaleMatcher.INSTANCE.registerKnown(locale);
@@ -703,6 +707,24 @@ public class VelocityServer implements ProxyServer, ForwardingAudience {
   @Override
   public Optional<RegisteredServer> getServer(String name) {
     return servers.getServer(name);
+  }
+
+  @Override
+  public Optional<RegisteredServer> getPrivateForwardedServer(InboundConnection conn) {
+    if (conn.getVirtualHost().isEmpty()) {
+      return Optional.empty();
+    }
+
+    String hostname = conn.getVirtualHost().get().getHostName();
+
+    // Azure container apps with internal ingress (limited to ACA environment) are to be resolved with only
+    // the host part of the domain. Setting up a private DNS zone to the static IP of the ACA environment will resolve
+    // this internally to the correct container.
+    hostname = hostname.split("\\.", 2)[0];
+
+    return Optional.of(new VelocityRegisteredServer(
+        this, new ServerInfo(hostname, new InetSocketAddress(hostname, 25565))));
+
   }
 
   @Override

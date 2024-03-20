@@ -28,6 +28,7 @@ import io.netty.buffer.ByteBuf;
 import net.kyori.adventure.text.Component;
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+// TODO: DEZE
 public class DisconnectPacket implements MinecraftPacket {
 
   private @Nullable ComponentHolder reason;

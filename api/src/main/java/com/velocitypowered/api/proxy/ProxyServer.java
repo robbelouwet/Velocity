@@ -89,6 +89,14 @@ public interface ProxyServer extends Audience {
   Optional<RegisteredServer> getServer(String name);
 
   /**
+   * Returns an instance of a {@link RegisteredServer} that resolves to a backend. The hostname of this backend is
+   * deduced from the inbound connection's virtual host and is used for internal azure container apps DNS resolution.
+   *
+   * @return the registered of the forwarded back-end, which may be empty
+   */
+  Optional<RegisteredServer> getPrivateForwardedServer(InboundConnection conn);
+
+  /**
    * Retrieves all {@link RegisteredServer}s registered with this proxy.
    *
    * @return the servers registered with this proxy

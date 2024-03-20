@@ -28,7 +28,11 @@ import com.velocitypowered.api.util.ModInfo;
 import com.velocitypowered.proxy.VelocityServer;
 import com.velocitypowered.proxy.config.PingPassthroughMode;
 import com.velocitypowered.proxy.config.VelocityConfiguration;
+import com.velocitypowered.proxy.event.VelocityEventManager;
 import com.velocitypowered.proxy.server.VelocityRegisteredServer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +46,8 @@ import java.util.concurrent.CompletableFuture;
 public class ServerListPingHandler {
 
   private final VelocityServer server;
+
+  private static final Logger logger = LogManager.getLogger(ServerListPingHandler.class);
 
   public ServerListPingHandler(VelocityServer server) {
     this.server = server;
@@ -63,21 +69,33 @@ public class ServerListPingHandler {
     );
   }
 
+  // TODO: DEZE ping passthrough
   private CompletableFuture<ServerPing> attemptPingPassthrough(VelocityInboundConnection connection,
                                                                PingPassthroughMode mode, List<String> servers,
                                                                ProtocolVersion responseProtocolVersion) {
     ServerPing fallback = constructLocalPing(connection.getProtocolVersion());
     List<CompletableFuture<ServerPing>> pings = new ArrayList<>();
-    for (String s : servers) {
-      Optional<RegisteredServer> rs = server.getServer(s);
-      if (rs.isEmpty()) {
-        continue;
+
+    if (server.getConfiguration().getForwardHost()) {
+      var backend = server.getPrivateForwardedServer(connection);
+      logger.debug("Private forwarding enabled, pinging backend " + backend);
+      backend.ifPresent(rs -> pings
+          .add(((VelocityRegisteredServer) rs)
+              .ping(connection.getConnection().eventLoop(), PingOptions.builder()
+                  .version(responseProtocolVersion).build())));
+    } else {
+      for (String s : servers) {
+        Optional<RegisteredServer> rs = server.getServer(s);
+        if (rs.isEmpty()) {
+          continue;
+        }
+        VelocityRegisteredServer vrs = (VelocityRegisteredServer) rs.get();
+        pings.add(vrs.ping(connection.getConnection().eventLoop(), PingOptions.builder()
+            .version(responseProtocolVersion).build()));
       }
-      VelocityRegisteredServer vrs = (VelocityRegisteredServer) rs.get();
-      pings.add(vrs.ping(connection.getConnection().eventLoop(), PingOptions.builder()
-          .version(responseProtocolVersion).build()));
     }
     if (pings.isEmpty()) {
+      logger.debug("No pings were performed to backend! Backend servers empty and private forwarding disabled.");
       return CompletableFuture.completedFuture(fallback);
     }
 

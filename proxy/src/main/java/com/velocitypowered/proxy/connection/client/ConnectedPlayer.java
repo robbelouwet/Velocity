@@ -817,7 +817,7 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
     if (!server.getConfiguration().getForwardHost()) {
       return this.getNextServerToTry(null);
     }
-    return getPrivateForwardedServer();
+    return server.getPrivateForwardedServer(this);
   }
 
   /**
@@ -858,15 +858,6 @@ public class ConnectedPlayer implements MinecraftConnectionAssociation, Player, 
       return server.getServer(toTryName);
     }
     return Optional.empty();
-  }
-
-  private Optional<RegisteredServer> getPrivateForwardedServer() {
-    String hostname = getVirtualHost().get().getHostName();
-
-    hostname = hostname.split("\\.", 2)[0];
-
-    return Optional.of(new VelocityRegisteredServer(
-        server, new ServerInfo(hostname, new InetSocketAddress(hostname, 25565))));
   }
 
   private static boolean hasSameName(RegisteredServer server, String name) {
