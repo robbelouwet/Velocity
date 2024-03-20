@@ -83,3 +83,10 @@ lobby = "0.0.0.0:00000"
 try = []
 
 [forced-hosts]
+
+[advanced]
+# Specify a custom timeout for connection timeouts here. The default is five seconds.
+connection-timeout = 30000  # 30s because container probably needs to boot up first
+
+# Specify a read timeout for connections here. The default is 30 seconds.
+read-timeout = 30000  # 30s because container probably needs to boot up first
