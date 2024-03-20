@@ -78,12 +78,13 @@ public class ServerListPingHandler {
 
     if (server.getConfiguration().getForwardHost()) {
       var backend = server.getPrivateForwardedServer(connection);
-      logger.debug("Private forwarding enabled, pinging backend " + backend);
+      logger.info("Private forwarding enabled, pinging backend " + backend);
       backend.ifPresent(rs -> pings
           .add(((VelocityRegisteredServer) rs)
               .ping(connection.getConnection().eventLoop(), PingOptions.builder()
                   .version(responseProtocolVersion).build())));
     } else {
+      logger.info("Private forwarding disabled, pinging configured backend server.");
       for (String s : servers) {
         Optional<RegisteredServer> rs = server.getServer(s);
         if (rs.isEmpty()) {
