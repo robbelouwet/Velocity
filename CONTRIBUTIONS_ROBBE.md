@@ -1,6 +1,7 @@
 ## private host forwarding
 
 files:
+
 - AuthSessionHandler
 - VelocityConfiguration
 - ConnectedPlayer
@@ -14,3 +15,10 @@ Dus een DNS server hosten onder zone peer.banaan.com waar elke A record point na
 privatelink door verbinden. Op deze manier DNS resolutie van de container app environment gebruiken en elke server
 makkelijk een custom domain geven.
 
+## added ping-passthrough PASSTHROUGH mode
+
+Zorgt er voor dat die default ping response van velocity niet wordt terug gestuurd, ofwel returnt de backend server een
+ping response ofwel helemaal niks. Komt basically neer op het gooien van een exception op de juiste plaats.
+
+files:
+- ServerListPingHandler

@@ -100,6 +100,17 @@ public class ServerListPingHandler {
     CompletableFuture<List<ServerPing>> pingResponses = CompletableFutures.successfulAsList(pings,
         (ex) -> fallback);
     switch (mode) {
+      case PASSTHROUGH:
+        return pingResponses.thenApply(responses -> {
+          // Find the first non-fallback
+          for (ServerPing response : responses) {
+            if (response == fallback) {
+              throw new RuntimeException("Could not ping backend!");
+            }
+            return response;
+          }
+          throw new RuntimeException("Could not ping backend!");
+        });
       case ALL:
         return pingResponses.thenApply(responses -> {
           // Find the first non-fallback

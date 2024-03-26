@@ -110,7 +110,8 @@ public class VelocityRegisteredServer implements RegisteredServer, ForwardingAud
     server.createBootstrap(loop).handler(new ChannelInitializer<Channel>() {
       @Override
       protected void initChannel(Channel ch) throws Exception {
-        ch.pipeline().addLast(FRAME_DECODER, new MinecraftVarintFrameDecoder())
+        ch.pipeline()
+            .addLast(FRAME_DECODER, new MinecraftVarintFrameDecoder())
             .addLast(READ_TIMEOUT, new ReadTimeoutHandler(
                 pingOptions.getTimeout() == 0
                     ? server.getConfiguration().getReadTimeout()
