@@ -31,8 +31,7 @@ jobs:
       run: docker login -u ${{ secrets.DOCKER_REGISTRY_USERNAME }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
 
       # Publish velocity-dedicated
-    - name: Build and Push velocity-dedicated
+    - name: Build and Push velocity-consumption
       run: |
-        find . -maxdepth 2 -type d -exec ls -ld "{}" \;
-        docker build . -t robbelouwet/velocity-dedicated
-        docker push robbelouwet/velocity-dedicated
+        docker build . -t robbelouwet/velocity-consumption
+        docker push robbelouwet/velocity-consumption
